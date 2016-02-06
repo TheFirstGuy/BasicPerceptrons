@@ -15,7 +15,7 @@ public class Instances {
     private boolean isNorm;
 
     private ArrayList<double[]> instances = new ArrayList();
-    private ArrayList<Double> classification = new ArrayList();
+    private ArrayList<Double> classifications = new ArrayList();
     
     
     // Default constructor. Initializes all class members to 0 and false
@@ -40,6 +40,7 @@ public class Instances {
         //Add instance
         else{
             instances.add(instance);
+            classifications.add(classification);
         }
     }
     
@@ -59,10 +60,17 @@ public class Instances {
     }
     
     /*
-    Returns instance (ArrayList of Double)
+    Returns instance vector without classification
     */
     public double[] getInstance(int index){
         return instances.get(index);
+    }
+    
+    /*
+    Returns instance classification
+    */
+    public double getClassification(int index){
+        return classifications.get(index);
     }
     
     /*

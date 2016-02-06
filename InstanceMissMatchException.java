@@ -17,5 +17,9 @@ class InstanceMissMatchException extends Exception {
         super("Attempted to add instance of size: " + instance.length + " to "
                 + "Instance object with instance size: " + aThis);
     }
+
+    InstanceMissMatchException(String string) {
+        super(string);
+    }
     
 }

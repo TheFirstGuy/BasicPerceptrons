@@ -13,8 +13,8 @@ import java.util.ArrayList;
  */
 class InstanceMissMatchException extends Exception {
 
-    public InstanceMissMatchException(Instances aThis, ArrayList<Double> instance) {
-        super("Attempted to add instance of size: " + instance.size() + " to "
+    public InstanceMissMatchException(Instances aThis, double[] instance) {
+        super("Attempted to add instance of size: " + instance.length + " to "
                 + "Instance object with instance size: " + aThis);
     }
     

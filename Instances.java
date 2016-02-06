@@ -13,7 +13,9 @@ import java.util.ArrayList;
  */
 public class Instances {
     private boolean isNorm;
-    private ArrayList<ArrayList<Double>> instances = new ArrayList();
+
+    private ArrayList<double[]> instances = new ArrayList();
+    private ArrayList<Double> classification = new ArrayList();
     
     
     // Default constructor. Initializes all class members to 0 and false
@@ -28,11 +30,11 @@ public class Instances {
     are already normalized.
     */
     
-    public void add(ArrayList<Double> instance) throws InstanceNormalizedException, InstanceMissMatchException{
+    public void add(double[] instance, double classification) throws InstanceNormalizedException, InstanceMissMatchException{
         //Check normalization
         if(isNorm){ throw new InstanceNormalizedException(); }
         //Check if instance size matches
-        else if(instances.size() != 0 && instanceSize() != instance.size()){
+        else if(instances.size() != 0 && instanceSize() != instance.length){
             throw new InstanceMissMatchException(this, instance);
         }
         //Add instance
@@ -46,7 +48,7 @@ public class Instances {
     */
     public int instanceSize(){
         if(instances.isEmpty()){ return -1;}
-        else{ return instances.get(0).size();}
+        else{ return instances.get(0).length;}
     }
     
     /*
@@ -59,7 +61,7 @@ public class Instances {
     /*
     Returns instance (ArrayList of Double)
     */
-    public ArrayList<Double> getInstance(int index){
+    public double[] getInstance(int index){
         return instances.get(index);
     }
     
@@ -75,9 +77,9 @@ public class Instances {
             for(int i = 0; i < instanceSize(); i++){
                 mean = mean(instances, i);
                 stdev = stdev(instances, i, mean);
-                for(ArrayList<Double> instance: instances){
-                    norm = (instance.get(i) - mean)/stdev; // z = (x - u)/o
-                    instance.set(i, norm);
+                for(double[] instance: instances){
+                    norm = (instance[i] - mean)/stdev; // z = (x - u)/o
+                    instance[i] = norm;
                 }
             }
         }
@@ -90,10 +92,10 @@ public class Instances {
     Returns the mean of a given index of doubles. Assumes that all instances are of 
     the same size.
     */
-    private double mean(ArrayList<ArrayList<Double>> instances , int index) {
+    private double mean(ArrayList<double[]> instances , int index) {
         double sum = 0;
-        for(ArrayList<Double> instance: instances){
-            sum += instance.get(index);
+        for(double[] instance: instances){
+            sum += instance[index];
         }
         return sum / instances.size();
     }
@@ -102,10 +104,10 @@ public class Instances {
     Returns standard deviation given index of doubles and means. Assumes that all instances are of same
     size.
     */
-    private double stdev(ArrayList<ArrayList<Double>> instances, int index, double mean) {
+    private double stdev(ArrayList<double[]> instances, int index, double mean) {
         double sum = 0;
-        for(ArrayList<Double> instance: instances){
-            sum += Math.pow( instance.get(index) - mean, 2); // (x - u)^2
+        for(double[] instance: instances){
+            sum += Math.pow( instance[index] - mean, 2); // (x - u)^2
         }
         return Math.sqrt(sum/instances.size());
     }

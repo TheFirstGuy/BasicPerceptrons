@@ -1,6 +1,9 @@
 
 package basicperceptrons;
 
+import java.util.Arrays;
+import java.util.Random;
+
 /**
  *
  * @author Urs Mobile
@@ -31,5 +34,27 @@ public class Utils {
             return sum;
         }
         
+    }
+    
+    /*
+    Generates a range of numbers that is then shuffled in a random order. This
+    is used to make the training set more diverse and hopefully exit its occilation.
+    Size is the number of elements required, but is non inclusive for the range.
+    */
+    public static int[] randomRange(int size){
+        int[] range = new int[size];
+        for(int i = 0; i < range.length; i++){
+            range[i] = i;
+        }
+        Random rand = new Random();
+        int left, right;
+        for(int i = 0; i < size; i++){
+            left = rand.nextInt(size);
+            right = rand.nextInt(size);
+            int temp = range[left];
+            range[left] = range[right];
+            range[right] = temp;
+        }
+        return range;
     }
 }

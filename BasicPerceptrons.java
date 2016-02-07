@@ -16,13 +16,31 @@ public class BasicPerceptrons {
         try {
             Instances logicOr = new Instances();
             double[] temp = { 0.0, 0.0 };
-            logicOr.add( temp, 0.0);
+            logicOr.add( temp.clone(), 0.0);
             temp[1] = 1.0;
-            logicOr.add(temp, 1.0);
+            logicOr.add(temp.clone(), 1.0);
             temp[0] = 1.0;
-            logicOr.add(temp, 1.0);
+            logicOr.add(temp.clone(), 1.0);
             temp[1] = 0.0;
-            logicOr.add(temp, 1.0);
+            logicOr.add(temp.clone(), 1.0);
+            Perceptron p_or = new Perceptron(logicOr.instanceSize(), 0.0, .5, 0.2, 1.0, 0.0);
+            p_or.train(logicOr, 1, 10000, true);
+            temp[0] = 0.0;
+            System.out.println(p_or.binClassifyInstance(temp));
+            temp[0] = 1.0;
+            System.out.println(p_or.binClassifyInstance(temp));
+            temp[1] = 1.0;
+            System.out.println(p_or.binClassifyInstance(temp));
+            temp[0] = 0.0;
+            System.out.println(p_or.binClassifyInstance(temp));
+            System.out.print(p_or.toStringWeights());
+            for(int i = 0 ; i < logicOr.size(); i++){
+                double[] inst = logicOr.getInstance(i);
+                for(double d: inst){
+                    System.out.print(d + " ");
+                }
+                System.out.println();
+            }
         } catch (Instances.InstanceNormalizedException ex) {
             Logger.getLogger(BasicPerceptrons.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InstanceMissMatchException ex) {

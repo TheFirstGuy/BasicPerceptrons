@@ -120,7 +120,7 @@ public class Instances {
         return Math.sqrt(sum/instances.size());
     }
 
-    private static class InstanceNormalizedException extends Exception {
+    public static class InstanceNormalizedException extends Exception {
 
         public InstanceNormalizedException() {
             super("Attempted to add instance to normalized instances object.");

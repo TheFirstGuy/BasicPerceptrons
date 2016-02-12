@@ -37,6 +37,31 @@ public class Utils {
     }
     
     /*
+    Returns an array of double as the product of multiplying the passed array by
+    a scalar. Typically, the vector array will be the weights of the hidden layer of neurons.
+    */
+    public static double[] scalarMulti(double[] vector, double scalar){
+        double[] result = new double[vector.length];
+        for(int i = 0; i < vector.length; i++){
+            result[i] = vector[i] * scalar;
+        }
+        return result;
+    }
+    
+    /*
+    Modifies the sums array of double by using each element as the input of the
+    sigmoid function. Typically, the passed in vector will be the resulting vector of an 
+    activation of a hidden layer.
+    */
+    public static double vectorSigmoid(double[] vector){
+        double sum = 0;
+        for(int i = 0; i < vector.length; i++){
+            sum += (double)1/(double)(sigmoid(vector[i]));
+        }
+        return sum;
+    }
+    
+    /*
     Generates a range of numbers that is then shuffled in a random order. This
     is used to make the training set more diverse and hopefully exit its occilation.
     Size is the number of elements required, but is non inclusive for the range.

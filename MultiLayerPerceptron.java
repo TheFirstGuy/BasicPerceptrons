@@ -2,6 +2,8 @@
 package basicperceptrons;
 
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /*
@@ -11,12 +13,13 @@ supported right now.
  */
 public class MultiLayerPerceptron {
     private double[] inputNeurons;
-    private double[][] hiddenNeurons;
+    private Neuron[][] hiddenNeurons;
     private double[] biases;
     private final double threshold;
     private final double learningRate;
     private final double trueCase;
     private final double falseCase;
+    //private double [][] lastActivations; 
     
     /*
     Constructor for multiLayer Perceptron.
@@ -35,14 +38,25 @@ public class MultiLayerPerceptron {
         // Initialize input Neurons
         inputNeurons = new double[numInputs];
         for(int i = 0; i < numInputs; i++){
-            inputNeurons[i] = rand.nextDouble();
+            inputNeurons[i] = 1.0;
         }
         // Initialize hidden Neurons
-        hiddenNeurons = new double[hiddenLayers.length][];
+        hiddenNeurons = new Neuron[hiddenLayers.length][];
         for(int i = 0; i < hiddenLayers.length; i++){
-            hiddenNeurons[i] = new double[hiddenLayers[i]];
+            hiddenNeurons[i] = new Neuron[hiddenLayers[i]];
             for(int j = 0; j < hiddenLayers[i]; j++){
-                hiddenNeurons[i][j] = rand.nextDouble();
+                // Initialize first layer with number of inputs
+                if(i == 0){
+                    hiddenNeurons[i][j] = new Neuron(numInputs, i, j, false);
+                }
+                // Otherwise remaining layers are initialized with previous number
+                // of hidden neurons
+                else{
+                    if(i + 1 == hiddenLayers.length){// Check if output neuron
+                        hiddenNeurons[i][j] = new Neuron(hiddenLayers[i-1], i, j, true);
+                    }
+                        hiddenNeurons[i][j] = new Neuron(hiddenLayers[i-1], i, j, false);
+                }
             }
         }
         this.biases = biases;
@@ -55,22 +69,109 @@ public class MultiLayerPerceptron {
     /*
     Classifies an input vector. Input layer is treated as a single layer perceptron,
     sum is transfered to hidden layer. Hidden layers scale inputs, and results are 
-    run through activation function. Repeat until last hidden layer.
+    run through activation function. Repeat until last hidden layer.Assumes one output neuron.
     */
     public double classifyInstance(double[] instance) throws InstanceMissMatchException{
-        // Input layer forward activation
-        double[] temp;
-        double z = Utils.dotprod(inputNeurons, instance);
-        z += biases[0];
+        double[] inputs = instance;
         for(int i = 0; i < hiddenNeurons.length; i++){
-            // Calculate weighted activation of hidden layer
-            temp = Utils.scalarMulti(hiddenNeurons[i], z);
-            // Modify resulting vector with nonlinear function
-            z = Utils.vectorSigmoid(temp);
-            z += biases[i+1];
+            // Activate each neuron in layer i
+            for(int j = 0; j < hiddenNeurons[i].length; j++){
+                hiddenNeurons[i][j].activate(inputs, biases[i]);
+            }
+            // Get result of this hidden layer
+            inputs = getActivationArray(i);
         }
-        if(z >= threshold){ return trueCase;}
+        // Assumes one output neuron
+        if(inputs[0] >= threshold){ return trueCase;}
         else{ return falseCase;}
+    }
+    
+    /*
+    Back propagates through network, given error of classification. 
+    */
+    
+    
+    /*
+    Calculates classification error.
+    */
+    private static double calcError(double correct, double classification){
+        double error = correct - classification;
+        return 0.5 * Math.pow(error, 2);
+    }
+    
+    
+    
+    /*
+    Creates an array of outputs as doubles from a given hidden layer of neurons
+    by collecting their lastActivations.
+    */
+    private double[] getActivationArray(int layer){
+        double[] output = new double[hiddenNeurons[layer].length];
+        for(int i = 0; i < output.length; i++){
+            output[i] = hiddenNeurons[layer][i].lastActivation;
+        }
+        return output;
+    }
+    
+    private class Neuron{
+        public int layer;
+        public int id;
+        public double[] inputWeights;
+        public double biasWeight;
+        public double lastActivation;
+        private double delta;
+        private boolean isOut;
+        
+        
+        public Neuron(int numInputs, int layer, int id, boolean isOut){
+            inputWeights = new double[numInputs];
+            Random rand = new Random();
+            for(int i = 0; i< numInputs; i++){
+                inputWeights[i] = rand.nextDouble();
+            }
+            biasWeight = rand.nextDouble();
+            this.layer = layer;
+            this.id = id;
+            this.isOut = isOut;
+        }
+        
+        /*
+        Returns the activation of this neuron. Takes the dot product of input vector
+        (including the bias) with the input weights of each neuron. 
+        */
+        public double activate(double[] inputs, double bias) throws InstanceMissMatchException{
+            try {
+                lastActivation = Utils.dotprod( inputs, inputWeights);
+            } catch (InstanceMissMatchException ex) {
+                throw new InstanceMissMatchException("Miss match at layer: " + this.layer +
+                        " neuron: " + this.id);
+            }
+            lastActivation += biasWeight * bias;
+            lastActivation = Utils.sigmoid(lastActivation);
+            return lastActivation;
+        }
+        
+        /*
+        Calculates outer delta error for back propigation.
+        If it is the output neuron then...
+        (o_j - t)o_j(1 - o_j) where o_j is the last activation
+        layer as an argument.
+        Otherwise
+        (Sum(delta_l * w_jl))o_j(1 - o_j)
+        */
+        private double calcDelta(double classification, double forwardDelta){
+            if(isOut){
+                delta = (lastActivation - classification) * lastActivation * (1 - lastActivation);
+            }
+            else{
+                delta = 0;
+                for(double d: inputWeights){
+                    delta += d * forwardDelta;
+                }
+                delta = delta * lastActivation * (1 - lastActivation);
+            }
+            return delta;
+        }
     }
     
 }

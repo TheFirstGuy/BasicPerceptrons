@@ -13,6 +13,11 @@ public class BasicPerceptrons {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        testMLP();
+    }
+    
+    
+    public static void testOr(){
         try {
             Instances logicOr = new Instances();
             double[] temp = { 0.0, 0.0 };
@@ -43,6 +48,17 @@ public class BasicPerceptrons {
             }
         } catch (Instances.InstanceNormalizedException ex) {
             Logger.getLogger(BasicPerceptrons.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstanceMissMatchException ex) {
+            Logger.getLogger(BasicPerceptrons.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public static void testMLP(){
+        double[] biases = {1.0,1.0};
+        int[] hl = { 3 };
+        MultiLayerPerceptron mlp = new MultiLayerPerceptron(2, hl, biases, 0.5, .2, 1.0, 0.0);
+        try {
+            System.out.println(mlp.classifyInstance(biases));
         } catch (InstanceMissMatchException ex) {
             Logger.getLogger(BasicPerceptrons.class.getName()).log(Level.SEVERE, null, ex);
         }

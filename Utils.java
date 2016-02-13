@@ -27,13 +27,28 @@ public class Utils {
                     + "number of outputs.");
         }
         else{
-            double sum = 0;
-            for(int i = 0; i < left.length; i++){
-                sum += left[i] * right[i];
-            }
-            return sum;
+            return sumVector(vectorDotprod(left, right));
         }
         
+    }
+    
+    /*
+    Returns the dot product of two arrays. Typically used for one layer of perceptron.
+    Throws error is arrays are of different weights.
+    */
+    
+    public static double[] vectorDotprod(double [] left, double[] right ) throws InstanceMissMatchException{
+        if(left.length != right.length){
+            throw new InstanceMissMatchException("Number of inputs does not match "
+                    + "number of outputs.");
+        }
+        else{
+            double[] result = new double[left.length];
+            for(int i = 0; i < left.length; i++){
+                result[i] = left[i] * right[i];
+            }
+            return result;
+        }
     }
     
     /*
@@ -53,10 +68,16 @@ public class Utils {
     sigmoid function. Typically, the passed in vector will be the resulting vector of an 
     activation of a hidden layer.
     */
-    public static double vectorSigmoid(double[] vector){
+    public static void vectorSigmoid(double[] vector){
+        for(int i = 0; i < vector.length; i++){
+            vector[i] = (double)1/(double)(sigmoid(vector[i]));
+        }
+    }
+    
+    public static double sumVector(double[] vector){
         double sum = 0;
         for(int i = 0; i < vector.length; i++){
-            sum += (double)1/(double)(sigmoid(vector[i]));
+            sum += vector[i];
         }
         return sum;
     }

@@ -47,15 +47,15 @@ public class MultiLayerPerceptron {
             for(int j = 0; j < hiddenLayers[i]; j++){
                 // Initialize first layer with number of inputs
                 if(i == 0){
-                    hiddenNeurons[i][j] = new Neuron(numInputs, i, j, false);
+                    hiddenNeurons[i][j] = new Neuron(numInputs, i, j, learningRate, false);
                 }
                 // Otherwise remaining layers are initialized with previous number
                 // of hidden neurons
                 else{
                     if(i + 1 == hiddenLayers.length){// Check if output neuron
-                        hiddenNeurons[i][j] = new Neuron(hiddenLayers[i-1], i, j, true);
+                        hiddenNeurons[i][j] = new Neuron(hiddenLayers[i-1], i, j, learningRate, true);
                     }
-                        hiddenNeurons[i][j] = new Neuron(hiddenLayers[i-1], i, j, false);
+                        hiddenNeurons[i][j] = new Neuron(hiddenLayers[i-1], i, j,learningRate, false);
                 }
             }
         }
@@ -87,9 +87,26 @@ public class MultiLayerPerceptron {
     }
     
     /*
-    Back propagates through network, given error of classification. 
+    Back propagates through network, given classification.  
     */
-    
+    public void backPropagate(double[] classification){
+        int index = hiddenNeurons.length - 1;
+        for(int i = 0; i < hiddenNeurons[index].length; i++){
+            calcOutputDelta( hiddenNeurons[index][i], classification[i]);
+        }
+        index--;
+        while(index >= 0 ){
+            for(int i = 0; i < hiddenNeurons[index].length; i++){
+                calcDelta( hiddenNeurons[index][i], hiddenNeurons[index + 1]);
+            }
+            index--;
+        }
+        for(Neuron[] layer: hiddenNeurons){
+            for(Neuron n: layer){
+                n.updateWeights();
+            }
+        }
+    }
     
     /*
     Calculates classification error.
@@ -99,8 +116,34 @@ public class MultiLayerPerceptron {
         return 0.5 * Math.pow(error, 2);
     }
     
+    /*
+    Calculates outer delta error for back propigation.
+    If it is the output neuron then...
+    (o_j - t)o_j(1 - o_j) where o_j is the last activation
+    layer as an argument.
     
+    */
+    private double calcOutputDelta(Neuron n, double classification){
+        n.delta = (n.lastActivation - classification) * n.lastActivation * (1 - n.lastActivation);
+        return n.delta;
+    }
     
+    /*
+    Calculates delta for hidden layers
+    (Sum(delta_l * w_jl))o_j(1 - o_j)
+    */
+    private double calcDelta(Neuron lower, Neuron[] highers){
+        double sum = 0;
+        for(Neuron n: highers){
+            for(double d: n.inputWeights){// Sum(delta_k * W_jk)
+                sum += n.delta * d;
+            }
+        }
+        lower.delta = lower.lastActivation * (1 - lower.lastActivation) * sum;
+        return lower.delta;
+    }
+    
+
     /*
     Creates an array of outputs as doubles from a given hidden layer of neurons
     by collecting their lastActivations.
@@ -120,10 +163,11 @@ public class MultiLayerPerceptron {
         public double biasWeight;
         public double lastActivation;
         private double delta;
+        private double learningRate;
         private boolean isOut;
         
         
-        public Neuron(int numInputs, int layer, int id, boolean isOut){
+        public Neuron(int numInputs, int layer, int id, double learningRate, boolean isOut){
             inputWeights = new double[numInputs];
             Random rand = new Random();
             for(int i = 0; i< numInputs; i++){
@@ -132,6 +176,7 @@ public class MultiLayerPerceptron {
             biasWeight = rand.nextDouble();
             this.layer = layer;
             this.id = id;
+            this.learningRate = learningRate;
             this.isOut = isOut;
         }
         
@@ -151,26 +196,17 @@ public class MultiLayerPerceptron {
             return lastActivation;
         }
         
+        
+        
+        
         /*
-        Calculates outer delta error for back propigation.
-        If it is the output neuron then...
-        (o_j - t)o_j(1 - o_j) where o_j is the last activation
-        layer as an argument.
-        Otherwise
-        (Sum(delta_l * w_jl))o_j(1 - o_j)
+        Updates weights of all inputs. Assumes that correct delta has already been calculated.
         */
-        private double calcDelta(double classification, double forwardDelta){
-            if(isOut){
-                delta = (lastActivation - classification) * lastActivation * (1 - lastActivation);
+        private void updateWeights(){
+            for(double d: inputWeights){
+                d = d - learningRate * delta * lastActivation;
             }
-            else{
-                delta = 0;
-                for(double d: inputWeights){
-                    delta += d * forwardDelta;
-                }
-                delta = delta * lastActivation * (1 - lastActivation);
-            }
-            return delta;
+            biasWeight = biasWeight + learningRate * delta;
         }
     }
     
